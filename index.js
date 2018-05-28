@@ -1,10 +1,11 @@
 
-const mysql = require('mysql');
+// const mysql = require('mysql');
+const MySQL = require('./db/promisify-mysql');
 const inquire = require('inquirer');
 const { /*customerChoices,*/ managerChoices, supervisorChoices } = require('./controllers/index');
 const { customerView } = require('./views/index');
 
-const connection = mysql.createConnection({
+const connection = new MySQL({
   host: 'localhost',
   port: '3306',
   user: 'root',
@@ -12,15 +13,12 @@ const connection = mysql.createConnection({
   password: ''
 })
 
-connection.connect(((err) => {
-  const { host, port, database } = connection.config;
-  if (err) throw err;
-  console.log(` Successfully connected to ${database} on ${host}:${port}!`);
+
   getUserType()
     .then((user) => {
       start(user.status,connection);
     })
-}))
+
 
 function start(user,connection) {
   if(user === 'CUSTOMER') {

@@ -1,9 +1,9 @@
 
 const mysql = require('mysql');
 
-class Mysql {
+class MySQL {
   constructor(config) {
-    this.config = mysql.createConnection(config);
+    this.connection = mysql.createConnection(config);
   }
 
   query(str, args) {
@@ -31,4 +31,4 @@ class Mysql {
 
 }
 
-module.exports = Mysql;
+module.exports = MySQL;
