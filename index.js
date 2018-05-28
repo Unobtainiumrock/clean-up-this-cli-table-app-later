@@ -1,8 +1,8 @@
 
 const MySQL = require('./db/promisify-mysql');
 const inquire = require('inquirer');
-const { /*customerChoices,*/ managerChoices, supervisorChoices } = require('./controllers/index');
-// const { customerView } = require('./views/index');
+const { customerChoices, managerChoices, supervisorChoices } = require('./controllers/index');
+const { customerView, managerView, supervisorView } = require('./views/index');
 
 const connection = new MySQL({
   host: 'localhost',
@@ -12,13 +12,19 @@ const connection = new MySQL({
   password: ''
 });
 
+//Starts the Application by grabbing the user's level of authority
 (async () => {
   let userAuthority = await getUserType();
   start(userAuthority.status);
 })()
 
+
+//Core logic for app flow. Checks the user's authority and calls the respective functions
 async function start(user) {
   if(user === 'CUSTOMER') {
+
+
+
     let item_ID = await customerChoices();
     item_ID = parseInt(item_ID.userChoice);
 
@@ -46,15 +52,15 @@ async function start(user) {
 //   customerView();
 // }
 
-const customerChoices = () => {
-  return inquire
-    .prompt({
-      name: 'userChoice',
-      type: 'input',
-      message: 'What is the ID of the item you would like to purchase? [Quit with Q]'
-    })
-}
-
+// const customerChoices = () => {
+//   return inquire
+//     .prompt({
+//       name: 'userChoice',
+//       type: 'input',
+//       message: 'What is the ID of the item you would like to purchase? [Quit with Q]'
+//     })
+// }
+``
 /**
  * @returns a promise object containing the authority of user as a string
  */
