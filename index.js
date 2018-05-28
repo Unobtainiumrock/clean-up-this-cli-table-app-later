@@ -1,9 +1,8 @@
 
-// const mysql = require('mysql');
 const MySQL = require('./db/promisify-mysql');
 const inquire = require('inquirer');
 const { /*customerChoices,*/ managerChoices, supervisorChoices } = require('./controllers/index');
-const { customerView } = require('./views/index');
+// const { customerView } = require('./views/index');
 
 const connection = new MySQL({
   host: 'localhost',
@@ -11,18 +10,21 @@ const connection = new MySQL({
   user: 'root',
   database: 'bamazon_DB',
   password: ''
-})
+});
 
+(async () => {
+  let userAuthority = await getUserType();
+  start(userAuthority.status);
+})()
 
-  getUserType()
-    .then((user) => {
-      start(user.status,connection);
-    })
-
-
-function start(user,connection) {
+async function start(user) {
   if(user === 'CUSTOMER') {
-    customerChoices(connection);
+    let query = await customerChoices();
+    query = parseInt(query.userChoice);
+    console.log(query,'====');
+    connection.query('SELECT * FROM products WHERE ?',{ item_ID: query },(err,res) => {
+      console.log(res);
+    })
   }
 
   if(user === 'MANAGER') {
@@ -34,11 +36,20 @@ function start(user,connection) {
   }
 }
 
+// const customerChoices = () => {
+//   console.log('Getting Customer Choices..')
+//   // Request something fromt the DB and pass it to view
+//   connection.query('SELECT * FROM products',(err,res) => console.log(res));
+//   customerView();
+// }
+
 const customerChoices = () => {
-  console.log('Getting Customer Choices..')
-  // Request something fromt the DB and pass it to view
-  connection.query('SELECT * FROM products',(err,res) => console.log(res));
-  customerView();
+  return inquire
+    .prompt({
+      name: 'userChoice',
+      type: 'input',
+      message: 'What is the ID of the item you would like to purchase? [Quit with Q]'
+    })
 }
 
 /**

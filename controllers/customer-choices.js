@@ -1,11 +1,14 @@
 
 const { customerView } = require('../views/index');
+const inquire = require('inquirer');
 
 const customerChoices = () => {
-  console.log('Getting Customer Choices..')
-  // Request something fromt the DB and pass it to view
-  connection.query('SELECT * FROM products',(err,res) => console.log(res));
-  customerView();
+  return inquire
+    .prompt({
+      name: 'userChoice',
+      type: 'input',
+      message: 'What is the ID of the item you would like to purchase? [Quit with Q]',
+    })
 }
 
 module.exports = customerChoices;
