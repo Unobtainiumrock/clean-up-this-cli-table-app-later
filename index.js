@@ -1,7 +1,8 @@
 
 const mysql = require('mysql');
 const inquire = require('inquirer');
-const { customerChoices, managerChoices, supervisorChoices } = require('./controllers/index');
+const { /*customerChoices,*/ managerChoices, supervisorChoices } = require('./controllers/index');
+const { customerView } = require('./views/index');
 
 const connection = mysql.createConnection({
   host: 'localhost',
@@ -17,13 +18,13 @@ connection.connect(((err) => {
   console.log(` Successfully connected to ${database} on ${host}:${port}!`);
   getUserType()
     .then((user) => {
-      start(user.status);
+      start(user.status,connection);
     })
 }))
 
-function start(user) {
+function start(user,connection) {
   if(user === 'CUSTOMER') {
-    customerChoices();
+    customerChoices(connection);
   }
 
   if(user === 'MANAGER') {
@@ -33,6 +34,13 @@ function start(user) {
   if(user === 'SUPERVISOR') {
     supervisorChoices();
   }
+}
+
+const customerChoices = () => {
+  console.log('Getting Customer Choices..')
+  // Request something fromt the DB and pass it to view
+  connection.query('SELECT * FROM products',(err,res) => console.log(res));
+  customerView();
 }
 
 /**
@@ -51,5 +59,6 @@ function getUserType() {
 function displayInventory() {
   connection.query('SELECT * FROM products', (err) => {
     if (err) throw err;
+
   })
 }
