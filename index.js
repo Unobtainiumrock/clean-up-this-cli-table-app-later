@@ -21,9 +21,13 @@ async function start(user) {
   if(user === 'CUSTOMER') {
     let item_ID = await customerChoices();
     item_ID = parseInt(item_ID.userChoice);
-    connection.query('SELECT * FROM products WHERE ?',{ item_ID },(err,res) => {
-      console.log(res);
-    })
+
+    try {
+      const rows = await connection.query('SELECT * FROM products WHERE ?',{ item_ID });
+      console.log(rows);
+    } catch (err) {
+      console.error(`Failed to grab item:${err}`);
+    }
   }
 
   if(user === 'MANAGER') {
