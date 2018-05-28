@@ -19,10 +19,9 @@ const connection = new MySQL({
 
 async function start(user) {
   if(user === 'CUSTOMER') {
-    let query = await customerChoices();
-    query = parseInt(query.userChoice);
-    console.log(query,'====');
-    connection.query('SELECT * FROM products WHERE ?',{ item_ID: query },(err,res) => {
+    let item_ID = await customerChoices();
+    item_ID = parseInt(item_ID.userChoice);
+    connection.query('SELECT * FROM products WHERE ?',{ item_ID },(err,res) => {
       console.log(res);
     })
   }
