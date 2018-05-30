@@ -42,7 +42,7 @@ async function start(user) {
   }
 
   if (user === 'MANAGER') {
-    // Show the inven
+    // Show the
     managerChoices();
   }
 
