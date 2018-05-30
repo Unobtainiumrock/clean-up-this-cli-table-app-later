@@ -23,12 +23,20 @@ const connection = new MySQL({
 async function start(user) {
   if(user === 'CUSTOMER') {
 
+  // Show the inventory to the user
+  try {
+    const inventory = await connection.query('SELECT * FROM products');
+      customerView(inventory);
+  } catch (err) {
+    console.error(`Failed to grab store inventory:${err}`);
+  }
 
-
+  // Grab the user's shopping choice
     let item_ID = await customerChoices();
     item_ID = parseInt(item_ID.userChoice);
 
     try {
+    // Modify inventory amount UPDATE
       const rows = await connection.query('SELECT * FROM products WHERE ?',{ item_ID });
       console.log(rows);
     } catch (err) {
@@ -60,7 +68,7 @@ async function start(user) {
 //       message: 'What is the ID of the item you would like to purchase? [Quit with Q]'
 //     })
 // }
-``
+
 /**
  * @returns a promise object containing the authority of user as a string
  */
