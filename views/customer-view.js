@@ -10,7 +10,6 @@ const customerView = (inventory) => {
     table.push([e.item_ID,e.product_name,e.department_name,e.price,e.stock_quantity]);
   })
   console.log(table.toString());
-  // console.log(inventory);
 }
 
 module.exports = customerView ;

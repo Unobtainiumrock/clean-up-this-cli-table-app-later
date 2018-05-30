@@ -23,15 +23,27 @@ const connection = new MySQL({
 async function start(user) {
 
   if (user === 'CUSTOMER') {
+    // Show the inventory to the user
+    await display(customerView);
+    // User make a selection
+    const choices = await grabChoices(customerChoices);
 
-    // Show the inventory to the user READ
-    await showInventory();
-    // Make a purchase
-    await makePurchase();
-    start(user);
+
+    for (let key in choices) {
+      if(choices[key].toUpperCase() === 'Q') {
+        console.log('Good bye!');
+        connection.close();
+        return;
+      }
+    }
+
+    await makePurchase(choices);
+    // Start over
+      start(user);
   }
 
   if (user === 'MANAGER') {
+    // 
     managerChoices();
   }
 
@@ -54,30 +66,34 @@ function getUserType() {
     })
 }
 
-// Read
-async function showInventory() {
+/**
+ * @param  {Function} cb is a "views" callback: customer, manager, or supervisor
+ */
+async function display(cb) {
   try {
     const inventory = await connection.query('SELECT * FROM products');
-    customerView(inventory);
+    cb(inventory);
   } catch (err) {
     console.error(`Failed to grab store inventory:${err}`);
   }
 }
 
-// Update
-async function makePurchase() {
+/**
+ * Makes a purchase from the inventory
+ */
+async function makePurchase(choices) {
 
   // Grab the user's shopping choices
-  const { item_ID, qty } = await grabChoices(customerChoices);
+  const { item_ID, qty } = choices;
 
   try {
-    // Modify inventory amount -UPDATE
+    // Modify inventory amount
     const rows = await connection.query('SELECT * FROM products WHERE ?', { item_ID });
     //If there's enough in stock
     if (qty <= rows[0].stock_quantity) {
       connection.query('UPDATE products SET ? WHERE ?', [
         {
-          stock_quantity: rows[0].stock_quantity - qty
+          stock_quantity: rows[0].stock_quantity - parseInt(qty)
         },
         { item_ID }
       ])
@@ -91,16 +107,13 @@ async function makePurchase() {
     console.error(`Failed to grab item:${err}`);
   }
 }
+
 /**
  * @param  {Function} cb is a "choices" callback: customer, manager, or supervisor
  * @returns and object with the resulting user choices
  */
 async function grabChoices(cb) {
   const userChoices = await cb();
-  const item_ID = parseInt(userChoices.item_ID);
-  const qty = parseInt(userChoices.qty);
-  return {
-    item_ID,
-    qty
-  }
+  console.log(userChoices);
+  return userChoices;
 }
