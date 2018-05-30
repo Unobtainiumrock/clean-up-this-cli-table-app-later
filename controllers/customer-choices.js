@@ -39,11 +39,18 @@ const customerChoices = async () => {
   //   message: 'What is the ID of the item you would like to purcahse? [Quit with Q]'
   // })
 
-  // It is currently a mystery, but I assumed instances of my class weren't working, because
+  // It is currently a mystery (what Object  has that my class doesn't),
+  // but I assumed instances of my class weren't working, because
   // instances of Javascript's native Object has a property which plays nicely with how 
   // npm inquirer works. I was getting errors, so I used Object.assign with an instance
-  // of the native Object and an instance of my custom Class.
-  const promptOne = Object.assign(new Object,new Prompt('item_ID','input','what'));
+  // of the native Object and an instance of my custom Class to give my class properties to 
+  // play well with inquirer.
+  const promptOne = Object.assign(new Object,new Prompt(
+    'item_ID',
+    'input',
+    'What is the ID of the item you would like to purchase?'
+  ));
+  console.log(promptOne);
   const choiceOne = await inquire.prompt(promptOne);
 
   if(choiceOne.item_ID.toUpperCase() === 'Q') {

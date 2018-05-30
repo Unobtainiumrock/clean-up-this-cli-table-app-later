@@ -4,15 +4,14 @@ class Prompt {
     this.name = name;
     this.type = type;
     this.message = message;
-  }
-
-  validate(val) {
-    if (isNaN(val) === false) {
-      return true;
-    } else if (val.toUpperCase === 'Q') {
-      return true;
-    }
-    return false;
+    this.validate = val => {
+      if (isNaN(val) === false) {
+        return true;
+      } else if (val.toUpperCase === 'Q') {
+        return true;
+      }
+      return false;
+    };
   }
 
 }
