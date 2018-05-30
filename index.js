@@ -27,23 +27,22 @@ async function start(user) {
     await display(customerView);
     // User make a selection
     const choices = await grabChoices(customerChoices);
-
-
+    // Check if the user wished to quit
     for (let key in choices) {
       if(choices[key].toUpperCase() === 'Q') {
         console.log('Good bye!');
-        connection.close();
+        connection.end();
         return;
       }
     }
-
+    // Execute purchase
     await makePurchase(choices);
     // Start over
       start(user);
   }
 
   if (user === 'MANAGER') {
-    // 
+    // Show the inven
     managerChoices();
   }
 
