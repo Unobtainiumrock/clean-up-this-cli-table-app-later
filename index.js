@@ -1,6 +1,7 @@
 
 const MySQL = require('./db/promisify-mysql');
 const inquire = require('inquirer');
+const { customerPrompts, managerPrompts, supervisorPrompts } = require('./prompts/index');
 const { customerChoices, managerChoices, supervisorChoices } = require('./controllers/index');
 const { customerView, managerView, supervisorView } = require('./views/index');
 
@@ -25,8 +26,8 @@ async function start(user) {
   if (user === 'CUSTOMER') {
     // Show the inventory to the user
     await display(customerView);
-    // User make a selection
-    const choices = await grabChoices(customerChoices);
+    // User makes a selection
+    const choices = await grabChoices(customerChoices,customerPrompts);
     // Check if the user wished to quit
     for (let key in choices) {
       if(choices[key].toUpperCase() === 'Q') {
@@ -109,10 +110,11 @@ async function makePurchase(choices) {
 
 /**
  * @param  {Function} cb is a "choices" callback: customer, manager, or supervisor
- * @returns and object with the resulting user choices
+ * @param {Array} prompts is an array 
+ * @returns an object with the resulting user choices
  */
-async function grabChoices(cb) {
-  const userChoices = await cb();
+async function grabChoices(cb,prompts) {
+  const userChoices = await cb(prompts);
   console.log(userChoices);
   return userChoices;
 }

@@ -7,13 +7,12 @@ class Prompt {
     this.validate = val => {
       if (isNaN(val) === false) {
         return true;
-      } else if (val.toUpperCase === 'Q') {
+      } else if (val.toUpperCase() === 'Q') {
         return true;
       }
       return false;
     };
   }
-
 }
 
 module.exports = Prompt;
