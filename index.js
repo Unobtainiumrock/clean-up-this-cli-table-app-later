@@ -2,7 +2,7 @@
 const MySQL = require('./db/promisify-mysql');
 const inquire = require('inquirer');
 const { customerPrompts, managerPrompts, supervisorPrompts } = require('./prompts/index');
-const userChoices = require('./controllers/user-choices');
+const { inputController, listController } = require('./controllers/index');
 const { customerView, managerView, supervisorView } = require('./views/index');
 
 const connection = new MySQL({
@@ -26,9 +26,8 @@ async function start(user) {
   if (user === 'CUSTOMER') {
     // Show the inventory to the user
     await display(customerView);
-    // User make a selection
-    const choices = await grabChoices(userChoices, customerPrompts());
-
+    // User make a selection.
+    const choices = await grabChoices(inputController, customerPrompts());
     // Check if the user wished to quit
     for (let key in choices) {
       if (choices[key].toUpperCase() === 'Q') {
@@ -44,8 +43,35 @@ async function start(user) {
   }
 
   if (user === 'MANAGER') {
-    // Show the
-    managerChoices();
+    // Manager makes a selection
+    let choices;
+
+    try {
+      choices = await grabChoices(listController,managerPrompts());
+      // Check the Manager choice and send subsequent prompts;
+      const { managerChoice } = choices;
+      console.log(typeof managerChoice);
+      if (managerChoice === 'View products for sale') {
+        // show inventory to manager
+        await display(customerView);
+        start(user);
+      }
+      // if (managerChoice === 'View low inventory') {
+
+      // }
+      if (managerChoice === 'Add to inventory') {
+        
+      }
+      // if (managerChoice === 'Add new product') {
+
+      // }
+      // if (managerChoice === 'Quit') {
+
+      // }
+    } catch(err) {
+      console.error(err);
+    }
+    
   }
 
   if (user === 'SUPERVISOR') {

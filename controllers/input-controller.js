@@ -8,18 +8,23 @@ const Prompt = require('../helper-functions-and-classes/prompt');
  *                 the prompt class.
  * @returns a promise object that contains the item_ID and quantity of the item being purchased
  */
-const userChoices = async (prompts) => {
-
+const inputController = async (prompts) => {
   const answers = {};
   // Iterate the prompts and go through each one, unless Q is submitted, and modify
   // our answers object to contain the user's choices
   for (let i = 0; i < prompts.length; i++) {
-    let currentPrompt = Object.assign(
-      new Object,
-      new (Function.prototype.bind.apply(Prompt, prompts[i]))
-    );
+    let userChoice;
 
-    let userChoice = await inquire.prompt(currentPrompt);
+        let currentPrompt = Object.assign(
+        new Object,
+        new (Function.prototype.bind.apply(Prompt, prompts[i]))
+      );
+
+    try {
+      userChoice = await inquire.prompt(currentPrompt);
+    } catch (err) {
+      console.error(err)
+    }
 
     const key = Object.keys(userChoice)[0];
     const val = userChoice[key];
@@ -37,4 +42,4 @@ const userChoices = async (prompts) => {
 
 }
 
-module.exports = userChoices;
+module.exports = inputController;
