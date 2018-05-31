@@ -1,7 +1,7 @@
 
 const Table = require('cli-table2');
 
-const customerView = (inventory) => {
+const makeTable = (inventory) => {
   const table = new Table({
     head: ['ID','Product','Department','Price','Stock'],
     colWidths: [10,40,20,15,15]
@@ -12,4 +12,4 @@ const customerView = (inventory) => {
   console.log(table.toString());
 }
 
-module.exports = customerView ;
+module.exports = makeTable;

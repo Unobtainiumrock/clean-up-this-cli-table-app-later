@@ -1,9 +1,9 @@
 
 const MySQL = require('./db/promisify-mysql');
 const inquire = require('inquirer');
+const listController = require('./list-controller');
+const makeTable = require('./make-table');
 const { customerPrompts, managerPrompts, supervisorPrompts } = require('./prompts/index');
-const { inputController, listController } = require('./controllers/index');
-const { customerView, managerView, supervisorView } = require('./views/index');
 
 const connection = new MySQL({
   host: 'localhost',
@@ -19,16 +19,15 @@ const connection = new MySQL({
   start(userAuthority.status);
 })()
 
-
 //Core logic for app flow. Checks the user's authority and calls the respective functions
 async function start(user) {
 
   if (user === 'CUSTOMER') {
     // Show the inventory to the user
-    await display(customerView);
+    await display(makeTable,'SELECT * FROM products ORDER BY department_name, product_name');
     // User make a selection.
-    const choices = await grabChoices(inputController, customerPrompts());
-    // Check if the user wished to quit
+    const choices = await grabChoices(user,listController, customerPrompts());
+    // Check if the user wished to quit and quit if asked. Pulled this from the demo giphy
     for (let key in choices) {
       if (choices[key].toUpperCase() === 'Q') {
         console.log('Good bye!');
@@ -43,40 +42,43 @@ async function start(user) {
   }
 
   if (user === 'MANAGER') {
-    // Manager makes a selection
     let choices;
-
     try {
-      choices = await grabChoices(listController,managerPrompts());
-      // Check the Manager choice and send subsequent prompts;
+      // Manager makes a selection
+      choices = await grabChoices(user,listController,managerPrompts());
+
       const { managerChoice } = choices;
-      console.log(typeof managerChoice);
+
       if (managerChoice === 'View products for sale') {
         // show inventory to manager
-        await display(customerView);
+        await display(makeTable,'SELECT * FROM products ORDER BY department_name, product_name');
         start(user);
       }
-      // if (managerChoice === 'View low inventory') {
-
-      // }
+      if (managerChoice === 'View low inventory') {
+        // Display low inventory
+       await display(makeTable,'SELECT * FROM products WHERE stock_quantity < 5 ORDER BY department_name, product_name');
+       start(user);
+      }
       if (managerChoice === 'Add to inventory') {
-        
+        //Add to inventory
+        await grabChoices(listController,)
       }
       // if (managerChoice === 'Add new product') {
 
       // }
-      // if (managerChoice === 'Quit') {
-
-      // }
+      if (managerChoice === 'Quit') {
+        console.log('Good bye!');
+        connection.end();
+      }
     } catch(err) {
       console.error(err);
     }
     
   }
 
-  if (user === 'SUPERVISOR') {
-    supervisorChoices();
-  }
+  // if (user === 'SUPERVISOR') {
+  //   supervisorChoices();
+  // }
 }
 
 
@@ -94,11 +96,12 @@ function getUserType() {
 }
 
 /**
- * @param  {Function} cb is a "views" callback: customer, manager, or supervisor
+ * @param  {Function} cb is a callback use to create tables
+ * @param {string} str is a query string 
  */
-async function display(cb) {
+async function display(cb,str) {
   try {
-    const inventory = await connection.query('SELECT * FROM products');
+    const inventory = await connection.query(str);
     cb(inventory);
   } catch (err) {
     console.error(`Failed to grab store inventory:${err}`);
@@ -120,7 +123,8 @@ async function makePurchase(choices) {
     if (qty <= rows[0].stock_quantity) {
       connection.query('UPDATE products SET ? WHERE ?', [
         {
-          stock_quantity: rows[0].stock_quantity - parseInt(qty)
+          stock_quantity: rows[0].stock_quantity - parseInt(qty),
+          // product_sales: row[0].product_sales + 
         },
         { item_ID }
       ])
@@ -135,12 +139,22 @@ async function makePurchase(choices) {
   }
 }
 
+// async function viewLowInventory() {
+//   try {
+
+//   }
+// }
+
+// async function addToInventory() {
+
+// }
+
 /**
- * @param  {Function} cb is a "choices" callback: customer, manager, or supervisor
+ * @param  {Function} cb is a callback grabbing user choices
  * @param {Array} prompts is an array 
  * @returns and object with the resulting user choices
  */
-async function grabChoices(cb, prompts) {
-  const userChoices = await cb(prompts);
+async function grabChoices(user,cb, prompts) {
+  const userChoices = await cb(user,prompts);
   return userChoices;
 }
