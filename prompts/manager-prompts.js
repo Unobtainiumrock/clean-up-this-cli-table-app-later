@@ -8,7 +8,7 @@ const managerPrompts = () => {
       null,
       'managerChoice',
       'list',
-      'What would you like to do? [Quit with Q] ',
+      'What would you like to do?',
       [
         'View products for sale',
         'View low inventory',

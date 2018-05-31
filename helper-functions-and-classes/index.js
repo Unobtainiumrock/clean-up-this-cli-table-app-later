@@ -1,5 +1,5 @@
 
-const ManagerPrompt = require('./Manager');
-const Prompt = require('./Prompt');
+const makeTable = require('./make-table');
+const inquireController = require('./inquire-controller');
 
-module.exports = { ManagerPrompt, Prompt };
+module.exports = { makeTable, inquireController };

@@ -1,14 +1,16 @@
 
 const inquire = require('inquirer');
-const { ManagerPrompt, Prompt } = require('./helper-functions-and-classes/index');
+const ManagerPrompt = require('./Manager');
+const Prompt = require('./Prompt');
 
 /**
+ * @param {string} user is a CAPITALIZED string representing the user's login authority
  * @param  {Array} prompts is an array of arrays containing the prompt values.
  *                 it is set  up like this so that we can .apply our prompts to new instances of
  *                 the prompt class.
  * @returns a promise object that contains the item_ID and quantity of the item being purchased
  */
-const inputController = async (user, prompts) => {
+const inquireController = async (user, prompts) => {
   const answers = {};
   // Iterate the prompts and go through each one, unless Q is submitted, and modify
   // our answers object to contain the user's choices
@@ -52,4 +54,4 @@ const inputController = async (user, prompts) => {
 
 }
 
-module.exports = inputController;
+module.exports = inquireController;

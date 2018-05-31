@@ -1,9 +1,8 @@
 
 const MySQL = require('./db/promisify-mysql');
 const inquire = require('inquirer');
-const listController = require('./list-controller');
-const makeTable = require('./make-table');
-const { customerPrompts, managerPrompts, supervisorPrompts } = require('./prompts/index');
+const { makeTable, inquireController } = require('./helper-functions-and-classes/index');
+const { customerPrompts, managerPrompts, supervisorPrompts, inventoryPrompts } = require('./prompts/index');
 
 const connection = new MySQL({
   host: 'localhost',
@@ -24,9 +23,9 @@ async function start(user) {
 
   if (user === 'CUSTOMER') {
     // Show the inventory to the user
-    await display(makeTable,'SELECT * FROM products ORDER BY department_name, product_name');
+    await display(makeTable, 'SELECT * FROM products ORDER BY department_name, product_name');
     // User make a selection.
-    const choices = await grabChoices(user,listController, customerPrompts());
+    const choices = await grabChoices(user, inquireController, customerPrompts());
     // Check if the user wished to quit and quit if asked. Pulled this from the demo giphy
     for (let key in choices) {
       if (choices[key].toUpperCase() === 'Q') {
@@ -45,40 +44,102 @@ async function start(user) {
     let choices;
     try {
       // Manager makes a selection
-      choices = await grabChoices(user,listController,managerPrompts());
+      choices = await grabChoices(user, inquireController, managerPrompts());
 
       const { managerChoice } = choices;
 
       if (managerChoice === 'View products for sale') {
         // show inventory to manager
-        await display(makeTable,'SELECT * FROM products ORDER BY department_name, product_name');
+        await display(makeTable, 'SELECT * FROM products ORDER BY department_name, product_name');
         start(user);
       }
       if (managerChoice === 'View low inventory') {
         // Display low inventory
-       await display(makeTable,'SELECT * FROM products WHERE stock_quantity < 5 ORDER BY department_name, product_name');
-       start(user);
+        await display(makeTable, 'SELECT * FROM products WHERE stock_quantity < 5 ORDER BY department_name, product_name');
+        start(user);
       }
       if (managerChoice === 'Add to inventory') {
         //Add to inventory
-        await grabChoices(listController,)
-      }
-      // if (managerChoice === 'Add new product') {
+        let inventoryArgs = await connection.query('SELECT * FROM products');
+        inventoryArgs = inventoryArgs.map(val => val.product_name);
 
-      // }
+        const { product_name } = await grabChoices(user, inquireController, inventoryPrompts(inventoryArgs));
+
+        const { amt } = await inquire.prompt({
+          name: 'amt',
+          type: 'input',
+          message: 'how many?',
+          validate: val => {
+            if (isNaN(val) === false) {
+              return true;
+            }
+            console.log('  Provide a number!');
+            return false;
+          }
+        });
+
+        const targets = await connection.query('SELECT * FROM products WHERE ?', { product_name });
+        await connection.query('UPDATE products SET ? WHERE ? ', [
+          { stock_quantity: parseInt(amt) + parseInt(targets[0].stock_quantity) },
+          { product_name }
+        ])
+        start(user);
+      }
+      if (managerChoice === 'Add new product') {
+        let { product_name, department_name, price, stock_quantity } = await inquire.prompt([
+          {
+            name: 'product_name',
+            type: 'input',
+            message: 'What is the product?',
+          },
+          {
+            name: 'department_name',
+            type: 'input',
+            message: 'What department will this belong to?'
+          },
+          {
+            name: 'price',
+            type: 'input',
+            message: 'How much does this item cost?',
+            validate: val => {
+              if(isNaN(val) === false) {
+                return true;
+              }
+              return false;
+            }
+          },
+          {
+            name: 'stock_quantity',
+            type: 'input',
+            message: 'How many would you like to put in stock?',
+            validate: val => {
+              if(isNaN(val) === false) {
+                return true;
+              }
+              return false;
+            }
+          }
+
+        ])
+        price = parseInt(price);
+        stock_quantity = parseInt(stock_quantity);
+        console.log(product_name,department_name,typeof price, typeof stock_quantity);
+      }
       if (managerChoice === 'Quit') {
         console.log('Good bye!');
         connection.end();
       }
-    } catch(err) {
+    } catch (err) {
       console.error(err);
     }
-    
+
   }
 
-  // if (user === 'SUPERVISOR') {
-  //   supervisorChoices();
-  // }
+  if (user === 'SUPERVISOR') {
+    // supervisorChoices();
+    console.log('Sorry, supervisor is not currently accessible to you. Good Bye!');
+    connection.end();
+  }
 }
 
 
@@ -99,7 +160,7 @@ function getUserType() {
  * @param  {Function} cb is a callback use to create tables
  * @param {string} str is a query string 
  */
-async function display(cb,str) {
+async function display(cb, str) {
   try {
     const inventory = await connection.query(str);
     cb(inventory);
@@ -138,13 +199,11 @@ async function makePurchase(choices) {
     console.error(`Failed to grab item:${err}`);
   }
 }
-
 // async function viewLowInventory() {
 //   try {
 
 //   }
 // }
-
 // async function addToInventory() {
 
 // }
@@ -154,7 +213,7 @@ async function makePurchase(choices) {
  * @param {Array} prompts is an array 
  * @returns and object with the resulting user choices
  */
-async function grabChoices(user,cb, prompts) {
-  const userChoices = await cb(user,prompts);
+async function grabChoices(user, cb, prompts) {
+  const userChoices = await cb(user, prompts);
   return userChoices;
 }
